@@ -1,0 +1,267 @@
+ # Basic
+ import os
+ from os import makedirs
+ from os import listdir
+ from shutil import copyfile
+from random import seed
+ from random import random
+ import numpy as np
+ import pandas as pd
+ # visuals
+ import seaborn as sns
+ import matplotlib.pyplot as plt
+ from matplotlib.image import imread
+ from PIL import Image
+ # Scikit-learn
+ from sklearn.model_selection import train_test_split
+ from sklearn.metrics import classification_report,confusion_matrix,ConfusionMatrixD
+ # Tensorflow
+ import tensorflow as tf
+ from tensorflow.keras.models import Sequential
+ from tensorflow.keras.preprocessing.image import ImageDataGenerator
+ from tensorflow.keras.layers import Dense,MaxPooling2D,Dropout,Flatten,BatchNormali
+ from tensorflow.keras.callbacks import ReduceLROnPlateau,EarlyStopping
+ model = Sequential()
+ model.add(Conv2D(32, (3, 3), input_shape=(64, 64, 3), activation='relu'))
+ model.add(MaxPooling2D(pool_size=(2, 2)))
+ model.add(Conv2D(32, (3, 3), activation='relu'))
+ model.add(MaxPooling2D(pool_size=(2, 2)))
+ model.add(Flatten())
+ model.add(Dense(units=128, activation='relu'))
+ model.add(Dense(units=1, activation='sigmoid'))
+ model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+ from tensorflow.keras.preprocessing.image import load_img, img_to_array
+ import zipfile
+ import os
+ import random
+ import shutil
+# Path to the ZIP file
+ zip_file_path = 'train.zip'
+ # Temporary directory to unzip contents
+ temp_extract_path = './temp_train'
+ # Directory where you want to save the subset
+ train_sub_path = './train_2000'
+ # Number of samples to select from the extracted files
+ num_samples = 2000
+ # Step 1: Unzip the ZIP file into a temporary directory
+ with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+    zip_ref.extractall(temp_extract_path)
+ # Step 2: Create the subset directory if it doesn't exist
+ os.makedirs(train_sub_path, exist_ok=True)
+ # Step 3: Randomly select files from the extracted directory
+ files = [f for f in os.listdir(temp_extract_path) if f.lower().endswith('.jpg')]
+ selected_files = random.sample(files, min(num_samples, len(files)))  # Avoids error
+ # Step 4: Copy selected files to the subset directory
+ for file in selected_files:
+    src_path = os.path.join(temp_extract_path, file)
+    dst_path = os.path.join(train_sub_path, file)
+    shutil.copy(src_path, dst_path)
+ import zipfile
+ from PIL import Image
+ import matplotlib.pyplot as plt
+ from io import BytesIO
+ # Ensure inline display in Jupyter
+ %matplotlib inline
+ # Path to the ZIP file
+ zip_file_path = 'train.zip'
+ # Open the ZIP file
+ with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+    # Filter for images in 'cats' and 'dogs' directories
+    cat_files = [file for file in zip_ref.namelist() if 'cat' in file.lower() and f
+    dog_files = [file for file in zip_ref.namelist() if 'dog' in file.lower() and f
+    
+    # Ensure there are files to display
+    if not cat_files or not dog_files:
+        raise ValueError("No cat or dog images found in the ZIP file.")
+    
+    # Select random cat and dog images
+    import random
+    selected_cat = random.choice(cat_files)
+selected_dog = random.choice(dog_files)
+ # Display the selected images
+ plt.figure(figsize=(10, 5))
+ for i, file in enumerate([selected_cat, selected_dog]):
+ # Read the image file from the ZIP archive
+ with zip_ref.open(file) as img_file:
+ img = Image.open(BytesIO(img_file.read()))
+ plt.subplot(1, 2, i + 1)
+ plt.imshow(img)
+ plt.axis('off')
+ plt.title("Cat" if i == 0 else "Dog")
+ plt.show()
+ from tensorflow.keras.models import Sequential
+ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, 
+# Initialize the CNN
+ model = Sequential()
+ # Add the first convolutional block
+ model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(64, 64, 3)))
+ model.add(BatchNormalization())  # Normalize the activations
+model.add(MaxPooling2D(pool_size=(2, 2)))
+ # Add the second convolutional block
+ model.add(Conv2D(64, (3, 3), activation='relu'))
+ model.add(BatchNormalization())
+ model.add(MaxPooling2D(pool_size=(2, 2)))
+ # Add the third convolutional block
+ model.add(Conv2D(128, (3, 3), activation='relu'))
+ model.add(BatchNormalization())
+ model.add(MaxPooling2D(pool_size=(2, 2)))
+ # Add a fourth convolutional block (new layer)
+ model.add(Conv2D(256, (3, 3), activation='relu'))
+ model.add(BatchNormalization())
+ model.add(MaxPooling2D(pool_size=(2, 2)))
+ # Flatten the layers to feed into fully connected layers
+ model.add(Flatten())
+ # Add the fully connected layers
+ model.add(Dense(units=256, activation='relu'))  # Increase units for higher capacit
+ model.add(Dropout(0.5))  # Regularization to prevent overfitting
+ model.add(Dense(units=128, activation='relu'))
+ model.add(Dropout(0.5))
+ model.add(Dense(units=1, activation='sigmoid'))  # Output layer for binary classifi
+ # Compile the CNN
+ model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+# Display the model summary
+ model.summary()
+ import os
+ import shutil
+ # Current dataset directory
+ dataset_dir = './temp_train/train'
+ # Create subfolders for 'cat' and 'dog'
+ os.makedirs(os.path.join(dataset_dir, 'cat'), exist_ok=True)
+ os.makedirs(os.path.join(dataset_dir, 'dog'), exist_ok=True)
+ # Move images into respective subfolders
+ for img in os.listdir(dataset_dir):
+    # Skip the subfolders themselves
+    if os.path.isdir(os.path.join(dataset_dir, img)):
+        continue
+    # Check if the file already exists in the target folder
+    if 'cat' in img.lower():
+        target_path = os.path.join(dataset_dir, 'cat', img)
+        if not os.path.exists(target_path):
+            shutil.move(os.path.join(dataset_dir, img), target_path)
+    elif 'dog' in img.lower():
+        target_path = os.path.join(dataset_dir, 'dog', img)
+        if not os.path.exists(target_path):
+            shutil.move(os.path.join(dataset_dir, img), target_path)
+ print("Images organized into 'cat' and 'dog' subfolders.")
+ import os
+ import shutil
+ from sklearn.model_selection import train_test_split
+ # Set the dataset directory
+ dataset_dir = './temp_train/train'
+ output_dir = './cat_dog_small'
+ # Create output directories for train, validation, and test sets
+ for folder in ['train', 'validation', 'test']:
+    os.makedirs(os.path.join(output_dir, folder, 'cat'), exist_ok=True)
+    os.makedirs(os.path.join(output_dir, folder, 'dog'), exist_ok=True)
+ # Split the dataset into train, validation, and test sets
+ for label in ['cat', 'dog']:
+    label_dir = os.path.join(dataset_dir, label)
+    images = [f for f in os.listdir(label_dir) if f.endswith('.jpg')]
+    train, temp = train_test_split(images, test_size=0.3, random_state=42)
+ val, test = train_test_split(temp, test_size=0.5, random_state=42)
+    for img in train:
+        shutil.copy(os.path.join(label_dir, img), os.path.join(output_dir, 'train',
+    for img in val:
+        shutil.copy(os.path.join(label_dir, img), os.path.join(output_dir, 'validat
+    for img in test:
+        shutil.copy(os.path.join(label_dir, img), os.path.join(output_dir, 'test', 
+print("Dataset successfully split into train, validation, and test sets.")
+ from tensorflow.keras.preprocessing.image import ImageDataGenerator
+ # Dataset paths
+ train_dir = './cat_dog_small/train'
+ validation_dir = './cat_dog_small/validation'
+ # Data generators
+ train_datagen = ImageDataGenerator(rescale=1.0/255)
+ validation_datagen = ImageDataGenerator(rescale=1.0/255)
+ # Prepare datasets with a batch size of 32
+ training_set = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=(64, 64),
+    batch_size=32,
+    class_mode='binary'
+ )
+ test_set = validation_datagen.flow_from_directory(
+    validation_dir,
+    target_size=(64, 64),
+    batch_size=32,
+    class_mode='binary'
+ )
+ # Verify steps per epoch and validation steps
+ print(f"Steps per epoch: {training_set.samples // training_set.batch_size}")
+ print(f"Validation steps: {test_set.samples // test_set.batch_size}")
+ steps_per_epoch = training_set.samples // training_set.batch_size
+ validation_steps = test_set.samples // test_set.batch_size
+ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+ # Calculate steps
+ steps_per_epoch = training_set.samples // training_set.batch_size
+ validation_steps = 150  # Force validation steps to 16
+ print(f"Steps per epoch: {steps_per_epoch}")
+print(f"Validation steps: {validation_steps}")
+ # Define callbacks
+ early_stopping = EarlyStopping(
+    monitor='val_loss',
+    patience=5,  # Stop training after 5 epochs of no improvement
+    restore_best_weights=True
+ )
+ reduce_lr = ReduceLROnPlateau(
+    monitor='val_loss',
+    factor=0.2,  # Reduce learning rate by a factor of 5
+    patience=3,  # After 3 epochs of no improvement
+    min_lr=1e-5  # Minimum learning rate
+ )
+ # Train the model
+ history = model.fit(
+    training_set,  # Use your training generator
+    validation_data=test_set,  # Use your validation generator
+    epochs=50,  # Number of epochs
+    steps_per_epoch=steps_per_epoch,  # Number of steps per epoch
+    validation_steps=validation_steps,  # Force validation steps to 16
+    verbose=1,  # Show training progress
+    callbacks=[early_stopping, reduce_lr]  # Include callbacks here
+ )
+ import matplotlib.pyplot as plt
+ # Plot training and validation loss
+ plt.figure(figsize=(8, 6))
+ plt.plot(history.history['loss'], label='Training Loss')
+ plt.plot(history.history['val_loss'], label='Validation Loss', linestyle='--')
+ plt.title('Training and Validation Loss')
+ plt.xlabel('Epochs')
+ plt.ylabel('Loss')
+ plt.legend()
+ plt.grid(True)
+ plt.show()
+
+ import matplotlib.pyplot as plt
+ # Plot training and validation accuracy
+ plt.figure(figsize=(8, 6))
+ plt.plot(history.history['accuracy'], label='Training Accuracy')
+ plt.plot(history.history['val_accuracy'], label='Validation Accuracy', linestyle='
+plt.title('Training and Validation Accuracy')
+ plt.xlabel('Epochs')
+ plt.ylabel('Accuracy')
+plt.legend()
+ plt.grid(True)
+ plt.show()
+ # Evaluate the model on the test set
+ test_loss, test_accuracy = model.evaluate(test_set)
+ # Display training history (from model.fit)
+ import matplotlib.pyplot as plt
+ # Plot training and validation accuracy
+ plt.figure(figsize=(12, 5))
+ plt.subplot(1, 2, 1)
+ plt.plot(history.history['accuracy'], label='Training Accuracy')
+ plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+ plt.title('Accuracy History')
+ plt.xlabel('Epochs')
+ plt.ylabel('Accuracy')
+ plt.legend()
+ # Plot training and validation loss
+plt.subplot(1, 2, 2)
+ plt.plot(history.history['loss'], label='Training Loss')
+ plt.plot(history.history['val_loss'], label='Validation Loss')
+ plt.title('Loss History')
+ plt.xlabel('Epochs')
+ plt.ylabel('Loss')
+ plt.legend()
+ plt.tight_layout()
+ plt.show()
