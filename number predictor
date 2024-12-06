@@ -1,0 +1,80 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Suppress warnings
+
+import cv2
+import numpy as np
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.image import img_to_array
+from sense_hat import SenseHat
+
+# Initialize Sense HAT
+sense = SenseHat()
+
+# Load and compile the trained model
+model_path = "number_classifier.h5"  # Ensure this is the correct path
+model = load_model(model_path)
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Preprocess the image for prediction
+def preprocess_image(image_path):
+    print("Preprocessing image...")
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if image is None:
+        raise ValueError("Image not found or invalid format")
+   
+    image = cv2.resize(image, (28, 28))  # Resize to match model's expected input size
+    image = image.reshape(28, 28, 1)     # Add channel dimension for grayscale
+    image = image.astype('float32') / 255.0  # Normalize pixel values to range [0, 1]
+    image = np.expand_dims(image, axis=0)    # Add batch dimension (1, 28, 28, 1)
+   
+    # Save the preprocessed image for visual inspection
+    cv2.imwrite("preprocessed_image.jpg", (image[0] * 255).reshape(28, 28))
+    print("Preprocessed image saved as 'preprocessed_image.jpg'")
+   
+    return image
+
+# Make a prediction and print raw prediction probabilities
+def predict_number_with_confidence(image_path):
+    image = preprocess_image(image_path)
+    try:
+        print("Making prediction...")
+        prediction = model.predict(image)
+        print("Raw prediction probabilities:", prediction)  # Show raw predictions for all classes
+       
+        predicted_number = np.argmax(prediction)
+        confidence = prediction[0][predicted_number] * 100
+        return predicted_number, confidence
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        exit()
+
+# Display the result on Sense HAT
+def display_on_sensehat(number):
+    sense.show_message(str(number), scroll_speed=0.1, text_colour=[255, 255, 255])
+
+# Capture an image using libcamera
+def capture_image():
+    image_path = "captured_number_image.jpg"
+    print("Capturing image...")
+    os.system(f"libcamera-jpeg -o {image_path}")
+    return image_path
+
+# Display the captured image briefly
+def display_image(image_path):
+    image = cv2.imread(image_path)
+    if image is None:
+        print("Error: Captured image not found!")
+        return False
+    cv2.imshow("Captured Image", image)
+    cv2.waitKey(3000)  # Display for 3 seconds (3000ms)
+    cv2.destroyAllWindows()
+    return True
+
+# Main function
+image_path = capture_image()  # Capture an image
+if display_image(image_path):  # Show the captured image for 3 seconds
+    predicted_number, confidence = predict_number_with_confidence(image_path)
+    print(f"The model predicts: {predicted_number} with {confidence:.1f}% confidence")
+    display_on_sensehat(predicted_number)  # Only display the number on the Sense HAT
+else:
+    print("Image display failed. Ensure the file path is correct.")
