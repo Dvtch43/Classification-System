@@ -1,0 +1,49 @@
+import cv2
+import numpy as np
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.image import img_to_array
+
+# Load the trained model
+model = load_model('/home/alfiebarnor/cnn_model.h5')  # Update this path
+
+# Labels for classification
+labels = ["Cat", "Dog"]
+
+# Initialize the camera
+camera = cv2.VideoCapture(0)  # Adjust index if needed
+
+if not camera.isOpened():
+    print("Error: Camera not detected!")
+    exit()
+
+print("Camera started. Press 'q' to exit.")
+
+while True:
+    ret, frame = camera.read()
+    if not ret:
+        print("Error: Could not read frame.")
+        break
+
+    # Preprocess the frame
+    resized_frame = cv2.resize(frame, (64, 64))  # Match model input size
+    image_array = img_to_array(resized_frame) / 255.0  # Normalize pixel values
+    image_array = np.expand_dims(image_array, axis=0)  # Add batch dimension
+
+    # Predict using the model
+    prediction = model.predict(image_array)
+    label_index = int(np.round(prediction[0][0]))
+    label = labels[label_index]
+
+    # Annotate the frame with the prediction
+    cv2.putText(frame, f"Prediction: {label}", (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+    # Show the live feed
+    cv2.imshow("Prediction Feed", frame)
+
+    # Exit on 'q'
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+camera.release()
+cv2.destroyAllWindows()
